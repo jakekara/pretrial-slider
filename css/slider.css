@@ -1,0 +1,25 @@
+svg.slider {
+    width: 100%;
+}
+
+.slider .handle{
+    stroke-width: 1px;
+    stroke: black;
+    cursor: pointer;
+    fill: gray;
+}
+
+.slider:hover{
+}
+
+.slider:hover .handle{
+    fill: lightskyblue;
+}
+
+.axis text {
+    fill: gray;
+}
+
+.axis line, .axis path {
+    stroke: lightgray;
+}
