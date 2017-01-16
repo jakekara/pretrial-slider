@@ -29,6 +29,13 @@ PR.build = function(sel){
     return this;
 }
 
+PR.build.prototype.add_explainer = function(){
+    var e = new PR.explainer();
+    e.add_to(this)
+    e.append();
+    return e;
+}
+
 PR.build.prototype.add_slider = function(){
     var s = new PR.slider();
     s.add_to(this);
@@ -77,16 +84,42 @@ PR.explainer.prototype.append = function(){
     return this;
 }
 
+PR.explainer.prototype.header = function(h){
+    if (typeof(h) == "undefined") return this.__header;
+    this.__header = h;
+    return this;
+}
+
+PR.explainer.prototype.subhed = function(s){
+    if (typeof(s) == "undefined") return this.__subhed;
+    this.__subhed = s;
+    return this;
+}
+
+PR.explainer.prototype.draw = function(){
+    this.d3selection.html("");
+    if (this.header != null){
+	this.d3selection.append("h3")
+	    .text(this.header())
+    }
+    if (this.subhed != null){
+	this.d3selection.append("p")
+	    .append("text")
+	    .text(this.subhed())
+    }
+    
+}
+
 PR.slider = function(){
     this.throttle = new THROTTLE();
     this.domain = [-3,-2,-1,0,1,2,3];
     this.scale_function = d3.scaleLinear;
     this.snap = true;
     this.__initial_value = this.domain[Math.floor(this.domain.length / 2)];
-    this.handle_radius = 10;
+    this.handle_radius = 8;
     this.bar_thickness = 3;
     this.horizontal_padding = 18;
-    this.vertical_padding = 10;
+    this.vertical_padding = 2;
     this.bar_color = "black";
     this.handle_color = "gray";
     return this;
@@ -212,6 +245,10 @@ PR.slider.prototype.snap_to = function(x){
     return this;
 }
 
-PR.slider.prototype.value = function(){
-    return Math.round(this.scale_inverse()(this.handle.attr("cx")));
+PR.slider.prototype.value = function(v){
+    if (typeof(v) == "undefined"){
+	return Math.round(this.scale_inverse()(this.handle.attr("cx")));
+    }
+
+    this.snap_to(this.scale()(v));
 }
