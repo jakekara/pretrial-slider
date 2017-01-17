@@ -1,9 +1,5 @@
-/** Pretrial risk assessment interactive!
- * by jake kara
- * jkara@trendct.org
- **/
-
-var PR = PR || {};
+// Throttle object for preventing rapid-fire calls to functions
+// (namely redraw on resize)
 
 var THROTTLE = function(){
     this.wait = 200;
@@ -16,90 +12,105 @@ THROTTLE.prototype.go = function(f){
     return this;
 }
 
-PR.build = function(sel){
+// SVG/D3 Slider library, because HTML sliders are so meh!
+var SR = SR || {};
+
+SR.build = function(sel){
     this.d3selection = sel;
     this.sections = [];
-
+    this.header_element = "h3";
+    this.update_function = function (){};
+    
     this.score = this.d3selection.append("div")
-	.append("h3")
+	.append(this.header_element)
 	.classed("score", true)
 	.text(this.total());
+    
     this.draw();
     
     return this;
 }
 
-PR.build.prototype.add_explainer = function(){
-    var e = new PR.explainer();
+SR.build.prototype.add_toggle = function(){
+    var t = new SR.toggle();
+    t.add_to(this);
+    t.append();
+    return t;
+}
+
+SR.build.prototype.add_explainer = function(){
+    var e = new SR.explainer();
     e.add_to(this)
     e.append();
     return e;
 }
 
-PR.build.prototype.add_slider = function(){
-    var s = new PR.slider();
+SR.build.prototype.add_slider = function(){
+    var s = new SR.slider();
     s.add_to(this);
     s.append();
     return s;
 }
 
-PR.build.prototype.draw = function(){
+SR.build.prototype.draw = function(){
     for (var i in this.sections){
 	this.sections[i].draw();
     }
 }
 
-PR.build.prototype.update = function(){
-    this.score.text(this.total());
+SR.build.prototype.update = function(){
+    this.update_function.call(this);
+    // this.score.text(this.total());
 }
 
-PR.build.prototype.total = function(){
+SR.build.prototype.total = function(){
     var ret = 0;
     for (var i in this.sections){
-	if (this.sections[i] instanceof PR.slider){
+	if (this.sections[i] instanceof SR.slider){
 	    ret += this.sections[i].value();
 	}
     }
     return ret;
 }
 
-PR.explainer = function(){
+SR.explainer = function(){
+    this.header_element = "h3";
     return this;
 }
 
-PR.explainer.prototype.html = function(html){
+SR.explainer.prototype.html = function(html){
     if (typeof(html) == "undefined") return this.__html;
     this.__html = html;
     return this;
 }
 
-PR.explainer.prototype.add_to = function(pr){
+SR.explainer.prototype.add_to = function(pr){
     this.pr = pr;
     this.pr.sections.push(this);
 }
 
-PR.explainer.prototype.append = function(){
+SR.explainer.prototype.append = function(){
     this.d3selection = this.pr.d3selection.append("div")
 	.classed("explainer-section", true);
     return this;
 }
 
-PR.explainer.prototype.header = function(h){
+SR.explainer.prototype.header = function(h){
     if (typeof(h) == "undefined") return this.__header;
     this.__header = h;
     return this;
 }
 
-PR.explainer.prototype.subhed = function(s){
+SR.explainer.prototype.subhed = function(s){
     if (typeof(s) == "undefined") return this.__subhed;
     this.__subhed = s;
     return this;
 }
 
-PR.explainer.prototype.draw = function(){
+SR.explainer.prototype.draw = function(){
     this.d3selection.html("");
     if (this.header != null){
-	this.d3selection.append("h3")
+	this.d3selection.append(this.header_element)
 	    .text(this.header())
     }
     if (this.subhed != null){
@@ -110,7 +121,7 @@ PR.explainer.prototype.draw = function(){
     
 }
 
-PR.slider = function(){
+SR.slider = function(){
     this.throttle = new THROTTLE();
     this.domain = [-3,-2,-1,0,1,2,3];
     this.scale_function = d3.scaleLinear;
@@ -125,26 +136,26 @@ PR.slider = function(){
     return this;
 }
 
-PR.slider.prototype.add_to = function(pr){
+SR.slider.prototype.add_to = function(pr){
     this.pr = pr;
     this.pr.sections.push(this);
     return this;
 }
 
-PR.slider.prototype.remove = function(){
+SR.slider.prototype.remove = function(){
     if (typeof(this.d3selection) != "undefined") {
 	this.d3selection.remove();
     }
     return this;
 }
 
-PR.slider.prototype.append = function(){
+SR.slider.prototype.append = function(){
     this.d3selection = this.pr.d3selection.append("svg")
 	.classed("slider", true);
     return this;
 }
 
-PR.slider.prototype.geom = function(){
+SR.slider.prototype.geom = function(){
     var bbox = this.pr.d3selection.node().getBoundingClientRect();
     return {
 	"x1": this.horizontal_padding,
@@ -152,7 +163,7 @@ PR.slider.prototype.geom = function(){
     }
 }
 
-PR.slider.prototype.draw = function(){
+SR.slider.prototype.draw = function(){
 
     var bbox = this.pr.d3selection.node().getBoundingClientRect();
     var height = this.handle_radius * 2 + this.vertical_padding * 2;
@@ -207,25 +218,25 @@ PR.slider.prototype.draw = function(){
     this.value(this.__initial_value);
 }
 
-PR.slider.prototype.scale = function(){
+SR.slider.prototype.scale = function(){
     return this.scale_function()
-	.domain([-3,3])
+	.domain([this.domain[0],this.domain[this.domain.length - 1]])
 	.range([this.geom().x1,this.geom().x2])
 }
 
-PR.slider.prototype.scale_inverse = function(){
+SR.slider.prototype.scale_inverse = function(){
     return this.scale_function()
-	.range([-3,3])
+    	.range([this.domain[0],this.domain[this.domain.length - 1]])
 	.domain([this.geom().x1,this.geom().x2])
 }
 
-PR.slider.prototype.move_to = function(x){
+SR.slider.prototype.move_to = function(x){
     if (x < this.x1 || x > this.x2) return;
     this.handle.attr("cx", x);
     return this;
 }
 
-PR.slider.prototype.snap_to = function(x){
+SR.slider.prototype.snap_to = function(x){
     var min = this.domain[0];
     var max = this.domain[this.domain.length - 1];
 
@@ -238,17 +249,110 @@ PR.slider.prototype.snap_to = function(x){
 	.each(function(){
 	    setTimeout(function(){that.pr.update.call(that.pr)},250);
 	});
-    
-    // 	setTimeout(function(){
-    // 	    that.pr.update.call(that.pr);
-    // }, 500);
     return this;
 }
 
-PR.slider.prototype.value = function(v){
+SR.slider.prototype.value = function(v){
     if (typeof(v) == "undefined"){
 	return Math.round(this.scale_inverse()(this.handle.attr("cx")));
     }
 
     this.snap_to(this.scale()(v));
+}
+
+SR.toggle = function(sel){
+    this.__options = [];
+    this.d3selection = sel;
+    return this;
+}
+
+SR.toggle_option = function(){
+    this.__default = false;
+    return this;
+}
+
+SR.toggle_option.prototype.label = function(l){
+    if (typeof(l) == "undefined") return this.__label;
+    this.__label = l;
+    return this;
+}
+
+SR.toggle_option.prototype.value = function(v){
+    if (typeof(v) == "undefined") return this.__value;
+    this.__value = v;
+    return this;
+}
+
+SR.toggle_option.prototype.select = function(){
+    var that = this;
+    this.__toggle.__options.forEach(function(opt){
+	opt.__selected = false;
+    });
+    this.__selected = true;
+    return this;
+}
+
+SR.toggle_option.prototype.draw = function(){
+    var that = this;
+}
+
+SR.toggle.prototype.add_option = function(){
+    var opt = new SR.toggle_option();
+    opt.__toggle = this;
+    this.__options.push(opt);
+    return opt;
+}
+
+SR.toggle.prototype.draw = function(){
+    this.d3selection.html("");
+
+    var that = this;
+    var toggle_selected = function(d){
+	d.select();
+	that.draw();
+	that.__sr.update();
+    };
+
+    this.d3selection.selectAll(".toggle_option")
+	.data(this.__options)
+	.enter()
+	.append("div")
+	.classed("toggle_option", true)
+	.text(function(d){
+	    return d.__label;
+	})
+	.attr("data-value", function(d){
+	    return d.__value;
+	})
+	.classed("selected", function(d){
+	    return d.__selected;
+	})
+	.on("click", toggle_selected)
+	.on("touchend", toggle_selected)
+    
+    this.d3selection.append("div").classed("clear_both", true);
+}
+
+SR.toggle.prototype.add_to = function(sr){
+    this.__sr = sr;
+    this.__sr.sections.push(this);
+    return this;
+}
+
+SR.toggle.prototype.append = function(){
+    this.d3selection = this.__sr.d3selection.append("div")
+	.classed("toggle-option", true);
+    return this;
+}
+
+SR.toggle.prototype.value = function(){
+    var selected = this.__options.filter(function(opt){
+	return opt.__selected;
+    });
+
+    if (selected.length != 1){
+	console.error("Could not find selected toggle option");
+    }
+
+    return selected[0].value();
 }

@@ -23,3 +23,25 @@ svg.slider {
 .axis line, .axis path {
     stroke: lightgray;
 }
+
+.toggle_option{
+    float:left;
+    padding: 10px;
+    cursor:pointer;
+    color: indianred;
+    background-color:white;
+    border: 1px solid indianred;
+    border-radius: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+}
+
+.toggle_option.selected,
+.toggle_option:hover{
+    background-color: indianred;
+    color: white;
+}
+
+.clear_both{
+    clear:both;
+}
