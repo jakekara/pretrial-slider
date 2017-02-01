@@ -1,12 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Lato:300,400');
+
+body{
+    font-family: 'Lato', sans-serif;
+}
+
+h1,h2,h3,h4,h5,h6{
+    font-weight:300;
+}
+
 svg.slider {
     width: 100%;
 }
 
 .slider .handle{
-    stroke-width: 1px;
+    stroke-width: 4px;
     stroke: black;
+    stroke: lightskyblue;
     cursor: pointer;
-    fill: gray;
+    fill: aliceblue;
+    
 }
 
 .slider:hover{
@@ -18,6 +30,7 @@ svg.slider {
 
 .axis text {
     fill: gray;
+    fill: lightgray;
 }
 
 .axis line, .axis path {
@@ -26,14 +39,14 @@ svg.slider {
 
 .toggle_option{
     float:left;
-    padding: 10px;
+    padding: 3px;
     cursor:pointer;
     color: indianred;
     background-color:white;
     border: 1px solid indianred;
     border-radius: 4px;
-    margin-right: 4px;
-    margin-top: 4px;
+    margin-right: 8px;
+    margin-top: 8px;
 }
 
 .toggle_option.selected,
@@ -44,4 +57,25 @@ svg.slider {
 
 .clear_both{
     clear:both;
+}
+
+.explainer-section h5{
+    margin-bottom: 0px;
+    margin-top: 0.5em;
+    font-weight:400;
+}
+
+g.tick{
+    cursor: pointer;
+    font-size:2em;
+}
+
+g.tick:hover *{
+    stroke:black;
+}
+
+g.tick:hover text{
+    fill: gray;
+    stroke-width: 0;
+    font-size:1.1em;
 }

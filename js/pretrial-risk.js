@@ -18,14 +18,19 @@ var SR = SR || {};
 SR.build = function(sel){
     this.d3selection = sel;
     this.sections = [];
-    this.header_element = "h3";
+    this.header_element = "div";
     this.update_function = function (){};
     
-    this.score = this.d3selection.append("div")
+    this.score = this.d3selection.append("h3")
 	.append(this.header_element)
 	.classed("score", true)
 	.text(this.total());
-    
+
+    this.recommendation =
+	this.d3selection.append("h3")
+	.append(this.header_element)
+	.classed("recommendation", true)
+
     this.draw();
     
     return this;
@@ -74,7 +79,7 @@ SR.build.prototype.total = function(){
 }
 
 SR.explainer = function(){
-    this.header_element = "h3";
+    this.header_element = "h5";
     return this;
 }
 
@@ -109,11 +114,11 @@ SR.explainer.prototype.subhed = function(s){
 
 SR.explainer.prototype.draw = function(){
     this.d3selection.html("");
-    if (this.header != null){
+    if (this.header() != null){
 	this.d3selection.append(this.header_element)
 	    .text(this.header())
     }
-    if (this.subhed != null){
+    if (this.subhed() != null){
 	this.d3selection.append("p")
 	    .append("text")
 	    .text(this.subhed())
@@ -127,9 +132,9 @@ SR.slider = function(){
     this.scale_function = d3.scaleLinear;
     this.snap = true;
     this.__initial_value = this.domain[Math.floor(this.domain.length / 2)];
-    this.handle_radius = 8;
+    this.handle_radius = 10;
     this.bar_thickness = 3;
-    this.horizontal_padding = 18;
+    this.horizontal_padding = this.handle_radius + this.bar_thickness;
     this.vertical_padding = 2;
     this.bar_color = "black";
     this.handle_color = "gray";

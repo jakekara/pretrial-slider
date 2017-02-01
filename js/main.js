@@ -9,6 +9,7 @@
     var go = function(offense_table){
 
 	var clean_num = function(str){
+	    if (typeof(str) == "undefined") return;
 	    return Number(str.replace(",","").replace("$","").trim());
 	}
 
@@ -36,8 +37,14 @@
 		return null;
 	    }
 
-
-	    var score_str = numeral(score).format("+0");
+	    lim_score = score;
+	    if (score > 6){
+		var lim_score = 6;
+	    }
+	    if (score < -6){
+		var lim_score = -6;
+	    }
+	    var score_str = numeral(lim_score).format("+0");
 	    if (score == 0) score_str = "0";
 	    return clean_num(record[0][score_str]);
 	}
@@ -70,10 +77,12 @@
 	var p = new SR.build(d3.select("#viz"));
 
 	var type_toggle = p.add_toggle();
+	
 	type_toggle.add_option()
 	    .label("Misdemeanor")
 	    .value("MISDEMEANOR")
 	    .select();
+	
 	type_toggle.add_option()
 	    .label("Felony")
 	    .value("FELONY");
@@ -93,30 +102,39 @@
 	    .label("Class C")
 	    .value("Class C")
 
-	// class_toggle.add_option()
-	//     .label("Class D")
-	//     .value("Class D")
-
 	class_toggle.add_option()
 	    .label("Unclassified")
 	    .value("Unclassified")
 
 	
 	p.update_function = function(){
-	    console.log();
-	    this.score.text(numeral(calculate_bond(this.total(),
-						   type_toggle.value(),
-						   class_toggle.value()))
-			    .format("$0,0"));
+
+	    var bond = calculate_bond(this.total(),
+				      type_toggle.value(),
+				      class_toggle.value());
+
+	    var score_text = "Risk score: " + numeral(this.total())
+		.format("+1");;
+
+	    var rec_text = "Recommendation: ";
+	    if (this.total() >= 0){
+		rec_text += "Promise to appear";
+	    }
+	    else {
+		rec_text += numeral(bond)
+		    .format("$0,0");
+	    }
+
+	    this.score.text(score_text);
+	    this.recommendation.text(rec_text);
 	};
 
-	for (var i in items){
-	    var item = items[i];
+	items.forEach(function(item){
 	    var e = p.add_explainer();
 	    e.header(item.header || null)
 		.subhed(item.subhed || null);
 	    var s = p.add_slider();
-	}
+	});
 
 	p.draw();
     }
